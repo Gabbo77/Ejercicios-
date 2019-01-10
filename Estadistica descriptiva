@@ -1,0 +1,462 @@
+---
+title: "Estadistica descriptiva"
+output: html_document
+---
+## Estadistica descriptiva en R
+
+Las paqueterias "base" de R ya incluyen algunos *dataset* como **cars** o **iris**., muchos otros dataset los podemos encontrar en el siguiente enlace. [Dataset in R ](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/00Index.html). Vamos a comenzar por analizar la base de datos **cars**, la cual se registró en 1920 y contene información de varios automoviles como es su velocidad y la distancia que les toma para poder frenar. [Cars](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/cars.html)
+
+Ahora, vamos a explorar esta base de datos.
+
+```{r}
+cars
+plot(cars)
+```
+
+Distancia = ft
+Speed = mph
+
+Algunas característcas que quisieramos averiguar son:
+
+- ¿Cuántos datos (observaciones) contiene nuestro data set?
+- ¿Cuántas variables contiene nuestro data set?
+- ¿Cómo son esas variables (en términos del tipo de variable i.e. nominal, ordinal, intervalar, razón)?
+- ¿Cómo se comportan esas variables?
+
+```{r}
+dim(cars)
+min(cars$speed) 
+min(cars$dist) 
+max(cars$speed) 
+max(cars$dist) 
+mean(cars$speed)
+mean(cars$dist)
+#median()
+#sd()
+```
+
+* Moda
+En ocasiones se busca saber cúal es el dato más frecuente en una variable, i.e. moda. R base no tiene una función para ello, entonces lo que puedes hacer es: 1) tu propia función; o 2) bajar una librería que ya tenga esa función.
+
+```{r}
+moda <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+sort(cars$speed)
+moda(cars$speed)
+table(cars$speed)
+hist(cars$speed)
+```
+
+2) La moda con librería (https://bioconductor.org/packages/release/bioc/html/genefilter.html)
+```{r}
+#install.packages("modeest")
+#install.packages("BiocManager")
+#library(BiocManager)
+#BiocManager::install("genefilter", version = "3.8")
+library(modeest)
+mfv(cars$speed)
+```
+
+Ahora bien tambien existen la siguiente librerías:
+
+```{r}
+#install.packages("DescTools")
+library(DescTools)
+Mode(cars$speed, na.rm = FALSE)
+```
+
+```{r}
+#install.packages("pracma")
+library(pracma)
+Mode(cars$speed)
+```
+
+Todas las funciones antes vistas las hemos analizado una por una, sin embargo, existen funciones ya hechas para desplegar varios datos descriptivos, las cuales forman parte de libreria específicas. Veamos algunas funcionaes para hacerlo.
+
+```{r}
+summary(cars)
+#install.packages("psych")
+library(psych)
+describe(cars)
+describeData(cars, head=4, tail=4) 
+```
+
+Con esta información ya podemos darnos una idea general de como esta integrado nuestro dataset. 
+
+## Distribuciones en R 
+
+El paquete **stats** de R (que se instala por defecto al instalar R, y se carga en la memoria siempre que iniciamos la sesión de R) implementa numerosas funciones para la realización de cálculos asociados a distintas distribuciones de probabilidad. En este caso utilizaremos las funciones para crear distribuciones continuas de tipo normal para poder aplicar estadistica descriptiva a nuestro dataset. 
+
+A manera de introducción para crear distribuciones normales podemos decir que disponemos de cuatro funciones. Se puede acceder a cada una de ellas simplemente precediendo el nombre de la distribución: d, p, q, r: 
+
+Ejemplos para una distribución normal 
+
+- dnorm función para obtener las funcion de probabilidad o de densidad (PDF)
+- pnorm función para la distribución acumulada (CDF) 
+- qnorm función para el valor de un percentil particular 
+- rnorm función para generar datos aleatorios con dicha distribución.
+
+Ahora, vamos a crear un dataset que contenga información de la altura de una población de mujeres considerando una distribución normal.
+
+```{r}
+estatura <- seq(50, 85, by = 0.1)
+PD <- dnorm(x = estatura, mean = 65, sd = 2)
+plot(estatura, PD)
+CDF <- pnorm(q = estatura, 65, 2)
+plot(estatura, CDF)
+```
+
+Si se quieres saber el CDF de un dato en particular debemos ejecutar el comando de la siguiente manera:
+
+```{r}
+pnorm (q = 65, mean = 65, sd = 2)
+```
+
+Ahora, lo que queremos saber es: ¿Cómo se comportan esas variables?
+
+* Medidas de Varianza
+* Cuantiles
+
+Para ello vamos a utlizar las siguientes funciones.
+
+```{r}
+range(cars$speed)
+quantile(cars$speed)
+quantile(cars$speed, prob = seq(0, 1, length = 11)) # deciles
+IQR(cars$speed)  # rango intercuartil (diferencia entre el 1er y 3er cuartil)
+hist(cars$speed)
+```
+
+# Graficos descriptivos: Boxplot, histograma y tallos y hojas.
+
+Como todos sabemos, las gráficas de cajas y brazos (box and whisker plot) o boxplot son muy útiles para mostrar los datos de manera descriptiva y darnos una idea de como estan integrados nuestro dataset.
+
+Lo que confirma nuestro boxplot es lo siguiente:
+
+- Q1 y Q3 = rango intercuartil que forma la caja
+- la mediana es la medida de tendencia central dentro de la caja
+- bigotes o brazo inferior: Q1 - 1.5 * IQR (min)
+- bigotes o brazo superior: Q3 + 1.5 * IQR (max)
+- lo que está más alla del max y min, son conocidos como datos atipicos o "outliers" 
+
+```{r}
+boxplot(cars)
+boxplot(cars$speed)
+boxplot(cars$speed, horizontal = T)
+```
+
+Puedes graficar los quantiles (observados) con los teóricos 
+
+- qqnorm 
+- qqplot
+- qqline
+
+```{r}
+qqnorm(cars$speed)
+qqline(cars$speed)
+```
+
+```{r}
+qqnorm(cars$speed, 
+	main= "Mi primer qq-plot de Cars_Speed", las=par("las"),  
+	col= "black", lwd = 6, pch = 16)
+qqline(cars$speed)
+hist(cars$speed)
+```
+
+
+Histograma 
+
+```{r}
+hist(cars$speed)
+hist(cars$speed, breaks = 10)
+hist(cars$speed, freq = FALSE)
+hist(cars$speed, breaks = 10, freq = FALSE)
+#Revisar help de hist
+```
+
+
+Tallos y hojas 
+```{r}
+stem(cars$speed)
+stem(cars$speed, scale = 4)
+stem(cars$speed, scale = 4, width = 100)
+```
+
+
+Otras medidas de varianza 
+
+* Desviación estándar: la raíz cuadrada de los cuadrados de las desviaciones de los valores de la variable respecto a su media.
+* Varianza: cuadrado de la desviación estándar.
+
+```{r}
+sd(cars$speed)
+var(cars$speed)
+```
+
+* Graáficas de distribuciones 
+file:///Users/azaleareyesaguilar/Downloads/v64i04.pdf
+
+Existen muchas librerias, ademas de las de base de R, para hacer este tipo de graficos, pero una muy útil es "fitdistrplus" porque es más diversa en sus funciones y sofisticada en sus gráficas.
+
+Entonces, bajamos la librería y usamos unos datos sobre *Ground_beef_patties*, el cual es un dataset sobre el tamaños de las porción recogidas por encuesta francesa, sobre empanadas de carne molida consumidas por niños menores de 5 años de edad. Exploramos un pocos los datos.
+
+```{r}
+#install.packages("fitdistrplus")
+#install.packages("MASS")
+#install.packages("survival")
+#install.packages("npsurv")
+#install.packages("lsei")
+library("fitdistrplus")
+library("MASS")
+library("survival")
+library("npsurv")
+library("lsei")
+
+data("groundbeef", package = "fitdistrplus")
+str(groundbeef)
+```
+Ahora ya sabes como esta cumpuesto nuestro dataset. Hagamos unos gráficos utiles que nos permitan describen y visualizar la distribución de estos datos.
+
+```{r}
+plotdist(groundbeef$serving, histo = TRUE, demp = TRUE)
+```
+
+Esta librería cuenta con la funcion *descdist*, la cual muestra algunas descripciones de los datos y una gráfica basado en la curtosis y la asimetría para decidir qué tipo de distribución presentan nuestros datos.
+
+```{r}
+descdist(groundbeef$serving)
+```
+
+Como sabemos:
+
+* La asimetría nos permite estudiar la deformación horizontal de los valores de la variable respecto al valor central de la media: 
+    + Positiva (a la derecha; media < mediana < moda).
+    + Negativa (a la izquierda; media < mediana < moda).
+
+* La curtosis nos permite estudiar lo puntiaguda que es la curva (concentración a la linea central) de los datos: 
+    + Mesocúrtica (normal).
+    + Leptocúrtica (existe una gran concentración).
+    + Platicúrtica (existe una menor distribución). 
+
+```{r}
+#asimetría (momento de 3er orden): hay que crear la función.
+asimetria=function(x) {
+    m3=mean((x-mean(x))^3)
+    skew=m3/(sd(x)^3)
+    skew}
+  
+asimetria(cars$speed)
+
+#Curtosis: también hay que crear la función
+kurtosis=function(x) {
+  m4=mean((x-mean(x))^4) 
+  kurt=m4/(sd(x)^4)-3  
+  kurt}
+  
+kurtosis(cars$speed)
+```
+
+Ahora veamos como otra vez la distribucion usando *descdist* pero ahora usemos el argumento *boot* (de manera predeterminada para "boot" es NULL, pero cuando no, los valores de "boot" de sesgo y kurtosis son graficados a partir de muestras bootstrap de los datos. "boot" debe estar indicado como un numero entero  por encima de 10. Observa el resultado.
+
+```{r}
+descdist(groundbeef$serving, boot = 1000)
+```
+
+Para corroborar a que distribución se ajustan mejor nuestros datos hagamos el siguiente analisis de ajuste a una distribucion Wibull, lognormal y gamma a partir de nuestro histograma. Veamos el resultados y los graficos:
+
+```{r}
+fweibull <- fitdist(groundbeef$serving, "weibull")
+summary(fweibull)
+fgamma <- fitdist(groundbeef$serving, "gamma")
+summary(fgamma)
+flognormal <- fitdist(groundbeef$serving, "lnorm")
+summary(flognormal)
+par(mfrow = c(2, 2))
+plot.legend <- c("Weibull", "lognormal", "gamma")
+denscomp(list(fweibull, flognormal, fgamma), legendtext = plot.legend)
+qqcomp(list(fweibull, flognormal, fgamma), legendtext = plot.legend)
+cdfcomp(list(fweibull, flognormal, fgamma), legendtext = plot.legend)
+ppcomp(list(fweibull, flognormal, fgamma), legendtext = plot.legend)
+```
+
+
+### Analisis para determinar la normalidad de nuestros datos
+
+Para saber si una variable tiene cierto tipo de distribución, e.g. normal, se puede usar la prueba de Shapiro. Para este caso vamos a utilizar el dataser: iris que ya previamente habiamos mencionado. Este famoso conjunto de datos de iris (de Fisher o Anderson) proporciona las medidas en centímetros de las variables longitud y anchura del sépalo y longitud y anchura del pétalo, respectivamente, para 50 flores de cada una de las 3 especies de iris. Las especies son *Iris setosa*, *Iris versicolor* y *Iris virginica*.
+
+```{r}
+shapiro.test(iris$Sepal.Length)
+hist(iris$Sepal.Length)
+
+qqplot(iris$Sepal.Length, iris$Species)
+
+# Hazlo con Petal.Lenght
+```
+
+Para el análisis de dos distribuciones (para una o dos muestras) podemos utilixar el test Kologorov-Smirnov, la cual, prueba si dos distribuciones son del mismo tipo. 
+Estableciendo lo siguiente:
+
+H0 = las distribuiones son iguales 
+H1 = las distribuciones NO son iguales 
+
+El test de Kolmogorov-Smirnov es bastante potente con muestras grandes.
+
+```{r}
+ks.test(mtcars$mpg, mtcars$vs)
+# realiza las gráficas que consideres muestran los resultados obtenidos
+```
+
+
+### Análisis de varianza
+
+Si tienes dos o más variables y te gustaría saber si tienen la misma varianza o son diferentes (homocedasticidad), puedes utilizar varias pruebas para saber si aceptas o rechazas a la HO = todas las varianzas son iguales.
+
+* Prueba de Bartlett
+* Prueba de Levene
+* Prueba de Hartley
+* Prueba de Chochran
+* Prueba de Layard
+
+la funcion **var.test** hace un análisis de comparación de dos muestras de acuerdo a un modelo lineal.
+
+```{r}
+#install.packages("e1071")
+library(e1071)
+var.test(iris$Sepal.Length, iris$Petal.Length)
+
+#para más de dos grupos
+bartlett.test(iris$Sepal.Length ~ iris$Species)
+#para dos muestras
+
+#install.packages("car")
+library(car)
+leveneTest(iris$Sepal.Length ~ iris$Species)
+# Favor de hacer las gráficas que ilustran sus resultados
+```
+
+### Distribuciones 
+
+Como sabemos existen diferentes tipos de distribuciones: 
+
+
+**Distribuciones Discretas**	    
+ 
+|     Distribución  |   Nombre en R	 |  
+| ----------------- |:--------------:| 
+| Binomial          |      binom     |  
+| Poisson	          |      pois      |    
+| Geométrica        |      geom      |   
+| Hipergeométrica   |      hyper     | 
+| Binomial Negativa |      nbinom    |  
+|                   |                |  
+
+**Distribuciones Continuas**	    
+
+|     Distribución  |   Nombre en R	 |  
+| ----------------- |:--------------:| 
+|      Uniforme     |      unif      |
+|       Normal      |      norm      |
+|      t Student    |       t        |
+|      F Fisher     |       F        |
+|    Chi-Cuadrado   |     chisq      |
+|    Exponencial    |      exp       |
+|        Gamma	    |     gamma      |
+|       Weibull     |     weibull    |
+|    W de Wilcoxon  |     wilcox     |
+|                   |                | 
+
+
+
+A continuacion analizaremos algunas de estas distribuciones. 
+Ejemplos de distribuciones:
+
+* Distribución binomial: Considere un experimento binomial con n = 150 y p = 0.10.
+
+```{r}
+dbinom(30, 150, 0.50) # Se consigue la probabilidad de obtener 15 en una distribución de 150 en una probabilidad del 10 %.
+pbinom(15, 150, 0.10) # Es la sumatoria de las probalibilidades que hay desde 0 a 15 en una distribución de 150 en una probabilidad del 10 %.
+qbinom(0.30, 150, 0.10) # Es el numero que se obtiene con un porcentaje del 30 sabiendo que solo hay 10 % de exito.
+rbinom(10, 150, 0.10) # Son 10 valores que se pueden conseguir con 10 % de probabilidad de exito
+```
+
+* Distribución Poisson: Considere una distribución de Poisson con valor esperado = 23.
+
+```{r}
+dpois(10, 23) #La probabilidad de 10 con valor esperado de 23
+ppois(10, 23) # La sumatoria de 0 a 10 con un valor esperado de 23
+qpois(0.10, 23) # Número que consigue con un cuartil al 10 % en un valor esperado de 23
+rpois(10, 23) # Son 10 valores que se pueden conseguir con un valor esperado de 23
+```
+
+* Distribución hipergeométrica: Considera un un grupo de 30 profesionistas con posgrado que asisten a una entrevista de trabajo, de los cuales se elijen 15 de manera aleatoria con el obejtivo de que sean contratados para diferentes sectores de la empresa. ¿Cuál es la probabilidad de que entre los 15 seleccionados aleatoriamente se incluyan a los 5 mejores aspirantes del grupo de 30? 
+
+```{r}
+dhyper(5,15,15,5)
+```
+
+Ahora, considere un porducto que se fabrica en una empresa automotriz, el cual una vez producido se envia a otra empresa en lotes de 50 unidades. Cuando son recibidos por la segunda empresa se inspeccionan 10 articulos de cada lote y se rechaza el lote completo si se encuentra mas de un articulo defectuoso. Imagine que un lote contiene 5 articulos defectuosos; ¿Cual es la probabilidad de que se rechace dicho lote?
+
+
+```{r}
+phyper(1, 5, 20, 10, lower.tail = FALSE)
+qhyper(0.3, 5, 20, 10,lower.tail = FALSE) # Se obtiene un numero con un porcentaje del 30 %
+rhyper(10, 5, 20, 10) # 10 aleatorios en funcion de la distribución hipergeométrica
+```
+
+* Distribución normal
+
+```{r}
+score <- c(8.5,7.8,9.7,6.6,7.1,8,7,9,7.5,8.1)
+# obtener la media 
+# obtener la desviación estándar
+```
+
+Utilizando la funcion dnorm y los valores de la media y la desviacón estándar obtenidos determine la densidad de los datos, la probabilidad de que alguien saque un score de 7, el score respecto al 10 % y 10 scores aleatorios.
+
+* Distribución T student: en este caso vamos a determinar: P(T >= 2.2010) con 11 grados de libertad.
+
+```{r}
+pt(2.2010,11,lower.tail = FALSE)
+```
+
+determinar: P(T >= t) = 0.05 con 15 grados de libertad, determinar la probabilidad de 1.
+
+```{r}
+qt(0.05, 15, lower.tail = TRUE)
+dt(5, 30,log = TRUE) # Probabilidad de 5 con 30 grados de libertad
+rt(10, 30, 20) # Dos valores con 14 grados de libertad
+```
+
+* Distribución chi cuadrada
+Determinar: X2(0.900, 5).
+
+```{r}
+qchisq(0.900, 5, lower.tail = FALSE)
+```
+
+P(X2 >= 18.49) con 30 grados de libertad.
+
+```{r}
+pchisq(18.49, 30, lower.tail = FALSE)
+dchisq(12, 50, 25) #Probabilidad de 12 con 50 grados de libertad
+rchisq(4, 50, 25) # Cuatro valores con 50 grados de libertad
+```
+
+
+* Distribución f
+Determinar: F(0.1, 5, 20)
+
+```{r}
+qf(0.1, 5, 20,lower.tail = FALSE)
+```
+
+P(F > = 198.50) con df1 = 1 y df2 = 2
+
+```{r}
+pf(198.50, 1, 2,lower.tail = FALSE)
+df(2, 9, 30) # Probabilidad de 7
+rf(5, 10, 40) # Cinco valores con 10/40 grados de libertad
+```

@@ -1,9 +1,9 @@
 # Ejercicios- 
-En estacarpeta se revisaran alguos ejercicios de estad??stica.
+En esta carpeta se revisaran alguos ejercicios de estadística.
 # Ejercicios-
 
 ## Prueba de Hipotesis con shapiro.test. 
-Una prueba de hip??tesis examina dos hip??tesis que se contraponen en relaci??n a una misma muestra o poblaci??n. 
+Una prueba de hipótesis examina dos hipótesis que se contraponen en relaci??n a una misma muestra o poblaci??n. 
 
 Pra este caso tenemos dos hipotesis que son:
 ??? __Hip??tesis nula (H0)__: es aquella que afirma
